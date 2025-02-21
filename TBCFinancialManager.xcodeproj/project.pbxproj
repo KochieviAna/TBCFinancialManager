@@ -10,9 +10,22 @@
 		FA2F91B62D692BA600CA4D7D /* TBCFinancialManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TBCFinancialManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FA2F91E62D6930D300CA4D7D /* Exceptions for "TBCFinancialManager" folder in "TBCFinancialManager" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FA2F91B52D692BA600CA4D7D /* TBCFinancialManager */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FA2F91B82D692BA600CA4D7D /* TBCFinancialManager */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FA2F91E62D6930D300CA4D7D /* Exceptions for "TBCFinancialManager" folder in "TBCFinancialManager" target */,
+			);
 			path = TBCFinancialManager;
 			sourceTree = "<group>";
 		};
@@ -255,6 +268,7 @@
 				DEVELOPMENT_TEAM = 6YJPZH2Y6W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TBCFinancialManager/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TBCFinancialManager;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -290,6 +304,7 @@
 				DEVELOPMENT_TEAM = 6YJPZH2Y6W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TBCFinancialManager/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TBCFinancialManager;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
