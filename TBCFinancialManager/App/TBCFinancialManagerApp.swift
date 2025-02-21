@@ -11,7 +11,7 @@ import SwiftUI
 struct TBCFinancialManagerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TBCFinancialManagerAppContentView()
         }
     }
 }

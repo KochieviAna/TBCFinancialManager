@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  TBCFinancialManagerAppContentView.swift
 //  TBCFinancialManager
 //
 //  Created by MacBook on 22.02.25.
@@ -7,18 +7,12 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct TBCFinancialManagerAppContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        UserFinancesView()
     }
 }
 
 #Preview {
-    ContentView()
+    TBCFinancialManagerAppContentView()
 }
