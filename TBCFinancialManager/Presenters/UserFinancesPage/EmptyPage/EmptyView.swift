@@ -16,11 +16,11 @@ struct EmptyView: View {
     
     private var emptyContent: some View {
         VStack {
-            Text("You don't have managed finances yet")
-                .font(.popinsSemiBold(size: 16))
+            Text("დაწესებული ლიმიტები ხელმისაწვდომი არა არის.")
+                .font(.popinsSemiBold(size: 13))
                 .foregroundColor(.primaryBlack)
             
-            Text("Click '+' button to start managing your finances")
+            Text("დააჭირე '+' ღილაკს დანახარჯების მართვის დასაწყებად")
                 .font(.popinsSemiBold(size: 12))
                 .foregroundColor(.secondaryGrey)
         }
