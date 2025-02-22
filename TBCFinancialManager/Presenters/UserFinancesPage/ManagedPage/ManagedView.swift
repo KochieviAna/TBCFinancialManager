@@ -92,11 +92,11 @@ struct ManagedView: View {
     
     private func getProgressColor(for expense: ExpenseTypeModel) -> Color {
         if expense.spent > expense.limit {
-            alertMessage = "Your expense has exceeded the limit by \(expense.formattedExceeded) GEL!"
+            alertMessage = "ყურადღებით! თქვენ გადააჭარბეთ დადგენილი ლიმიტის \(expense.formattedExceeded) ლარით!"
             showAlert = true
             return .darkPink
         } else if expense.spent / expense.limit >= 0.8 {
-            alertMessage = "Warning: You've spent over 80% of the limit!"
+            alertMessage = "მოგახსენებთ, რომ თქვენ გადააჭარბეთ დადგენილი ლიმიტის 80%-ს."
             showAlert = true
             return .darkOrange
         } else {
