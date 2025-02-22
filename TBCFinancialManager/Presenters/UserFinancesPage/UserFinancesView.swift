@@ -22,6 +22,7 @@ struct UserFinancesView: View {
                     ManagedView(expenses: expenses)
                 }
             }
+            .ignoresSafeArea()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("ფინანსური მენეჯერი")
             .toolbar {

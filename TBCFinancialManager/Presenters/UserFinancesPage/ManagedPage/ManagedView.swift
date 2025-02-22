@@ -28,15 +28,19 @@ struct ManagedView: View {
             VStack {
                 assetsView
                 
-                managedExpensesHeadline
-                
-                ForEach(expenses, id: \.id) { expense in
-                    limitedExpensesView(for: expense)
-                    Button("ხარჯვის სიმულაცია") {
-                        simulateSpending(for: expense)
+                if expenses.contains(where: { $0.limit > 0 }) {
+                    managedExpensesHeadline
+                    
+                    ForEach(expenses, id: \.id) { expense in
+                        if expense.limit > 0 {
+                            limitedExpensesView(for: expense)
+                            Button("ხარჯვის სიმულაცია") {
+                                simulateSpending(for: expense)
+                            }
+                            .padding()
+                            .foregroundColor(.primaryBlue)
+                        }
                     }
-                    .padding()
-                    .foregroundColor(.primaryBlue)
                 }
                 
                 if isEditing && !selectedExpenses.isEmpty {
