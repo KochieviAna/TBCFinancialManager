@@ -12,10 +12,18 @@ struct AddLimitsView: View {
     @State private var limitAmount: String = ""
     @State private var selectedExpense: ExpenseTypeModel?
     @State private var isPickerPresented: Bool = false
-    @State private var expenses: [ExpenseTypeModel] = []
-    @State private var showDuplicateAlert: Bool = false
     
     let onLimitAdded: (ExpenseTypeModel) -> Void
+    
+    private let expenseTypes = [
+        "ჯანმრთელობა, სილამაზე",
+        "ტრანსპორტი",
+        "გართობა",
+        "კომუნალურები",
+        "მოგზაურობა",
+        "რესტორანი, კაფე, ბარი",
+        "საოჯახო ხარჯი"
+    ]
     
     var body: some View {
         NavigationStack {
@@ -25,11 +33,8 @@ struct AddLimitsView: View {
                 Spacer(minLength: 300)
                 setLimitButton
             }
-            .navigationTitle("Set Expense Limit")
+            .navigationTitle("დანახარჯის ლიმიტი")
             .background(Color("backgroundColor"))
-            .alert(isPresented: $showDuplicateAlert) {
-                Alert(title: Text("Duplicate Expense"), message: Text("This expense type already has a limit set. Please choose another expense type."), dismissButton: .default(Text("OK")))
-            }
         }
         .sheet(isPresented: $isPickerPresented) {
             expensePickerSheet
@@ -39,7 +44,7 @@ struct AddLimitsView: View {
     private var limitDetailView: some View {
         VStack {
             HStack {
-                Text("Limit Amount")
+                Text("ლიმიტი")
                     .font(.popinsRegular(size: 12))
                     .foregroundColor(.primaryBlue)
                 
@@ -61,7 +66,7 @@ struct AddLimitsView: View {
     private var selectExpenseTypeView: some View {
         VStack {
             HStack {
-                Text("Expense Type")
+                Text("დანახარჯის ტიპი")
                     .font(.popinsRegular(size: 12))
                     .foregroundColor(.primaryBlue)
                 
@@ -72,14 +77,14 @@ struct AddLimitsView: View {
                 Button(action: {
                     isPickerPresented.toggle()
                 }) {
-                    Text(selectedExpense?.name ?? "Select Expense")
+                    Text(selectedExpense?.name ?? "აირჩიე დანახარჯის ტიპი")
                         .font(.popinsLight(size: 12))
-                        .foregroundColor(selectedExpense == nil ? .primaryBlack : .primaryWhite)
+                        .foregroundColor(selectedExpense == nil ? .primaryBlack : .primaryBlack)
                 }
+                .padding(.top)
                 
                 Spacer()
             }
-            .padding(.top)
             
             Divider()
                 .foregroundColor(.primaryBlue)
@@ -92,21 +97,20 @@ struct AddLimitsView: View {
             HStack {
                 Spacer()
                 
-                Button("Done") {
+                Button("დასრულება") {
                     isPickerPresented = false
                 }
                 .foregroundColor(.primaryBlue)
             }
             
-            Picker("Expense Type", selection: $selectedExpense) {
-                ForEach(expenses, id: \.id) { expense in
-                    Text(expense.name).tag(expense as ExpenseTypeModel?)
+            Picker("აირჩიე დანახარჯის ტიპი", selection: $selectedExpense) {
+                ForEach(expenseTypes, id: \.self) { type in
+                    Text(type).tag(ExpenseTypeModel(name: type, limit: 0, spent: 0))
                 }
             }
             .pickerStyle(.wheel)
         }
         .presentationDetents([.height(300), .medium])
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal)
     }
     
@@ -114,18 +118,13 @@ struct AddLimitsView: View {
         Button(action: {
             guard let selectedExpense = selectedExpense, let limit = Double(limitAmount) else { return }
             
-            if selectedExpense.limit > 0 {
-                showDuplicateAlert = true
-                return
-            }
-            
             var newExpense = selectedExpense
             newExpense.limit = limit
             
             onLimitAdded(newExpense)
             dismiss()
         }) {
-            Text("Set Limit")
+            Text("დასრულება")
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(Color.primaryBlue)
@@ -136,7 +135,6 @@ struct AddLimitsView: View {
         .disabled(selectedExpense?.limit ?? 0 > 0)
     }
 }
-
 
 #Preview {
     AddLimitsView(onLimitAdded: {_ in })

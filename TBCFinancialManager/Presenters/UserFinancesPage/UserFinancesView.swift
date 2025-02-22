@@ -8,20 +8,22 @@
 import SwiftUI
 
 struct UserFinancesView: View {
-    @StateObject private var networkManager = NetworkManager()
     @State private var isAddingLimit = false
-    
+    @State private var expenses: [ExpenseTypeModel] = []
+
     var body: some View {
         NavigationStack {
             VStack {
-                if networkManager.expenses.isEmpty {
+                if expenses.isEmpty {
                     EmptyView()
                 } else {
-                    ManagedView(expenses: networkManager.expenses)
+                    Spacer(minLength: 150)
+                    
+                    ManagedView(expenses: expenses)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("Financial Manager")
+            .navigationTitle("ფინანსური მენეჯერი")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
@@ -38,12 +40,8 @@ struct UserFinancesView: View {
             .edgesIgnoringSafeArea(.all)
             .sheet(isPresented: $isAddingLimit) {
                 AddLimitsView { newExpense in
-                    networkManager.addExpense(newExpense)
-                    networkManager.fetchExpenses()
+                    expenses.append(newExpense)
                 }
-            }
-            .onAppear {
-                networkManager.fetchExpenses()
             }
         }
     }

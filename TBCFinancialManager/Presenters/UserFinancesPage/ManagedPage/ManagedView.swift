@@ -8,11 +8,16 @@
 import SwiftUI
 
 struct ManagedView: View {
+    @State private var thisYearElectricity: Double = 80
+    @State private var lastYearElectricity: Double = 60
+    @State private var thisYearGas: Double = 50
+    @State private var lastYearGas: Double = 30
     @State private var isEditing: Bool = false
     @State private var expenses: [ExpenseTypeModel]
-    @State private var selectedExpenses: Set<Int> = [] // Track selected expenses using Int as id
+    @State private var selectedExpenses: Set<UUID> = []
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
     
-    // Custom initializer to make the view accessible
     init(expenses: [ExpenseTypeModel]) {
         self._expenses = State(initialValue: expenses)
     }
@@ -22,15 +27,15 @@ struct ManagedView: View {
             VStack {
                 assetsView
                 
-                managedExpencesHeadline
+                managedExpensesHeadline
                 
                 ForEach(expenses, id: \.id) { expense in
                     limitedExpensesView(for: expense)
                 }
-                                
+                
                 if isEditing && !selectedExpenses.isEmpty {
                     Button(action: deleteSelectedExpenses) {
-                        Text("Delete")
+                        Text("წაშლა")
                             .foregroundColor(.darkPink)
                             .font(.popinsRegular(size: 16))
                             .padding()
@@ -44,12 +49,17 @@ struct ManagedView: View {
                 greenPointsView
                 
                 Divider()
-
+                
                 naturalResourcesHeadline
+                
+                comparingResources
             }
             .background(Color("backgroundColor"))
         }
         .background(Color("backgroundColor"))
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Warning"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        }
     }
     
     private var assetsView: some View {
@@ -57,13 +67,13 @@ struct ManagedView: View {
             Divider()
             
             HStack {
-                Text("Liabilities")
+                Text("ვალდებულებები")
                     .font(.popinsRegular(size: 16))
                     .foregroundStyle(.primaryBlack)
                 
                 Spacer()
                 
-                Text("Assets")
+                Text("აქტივები")
                     .font(.popinsRegular(size: 16))
                     .foregroundStyle(.primaryBlack)
             }
@@ -77,7 +87,7 @@ struct ManagedView: View {
                 
                 Spacer()
                 
-                Text("33 GEL")
+                Text("500 GEL")
                     .font(.popinsLight(size: 16))
                     .foregroundStyle(.primaryBlack)
             }
@@ -89,13 +99,13 @@ struct ManagedView: View {
                 .frame(height: 2)
             
             HStack {
-                Text("Net Worth")
+                Text("მდგომარეობა")
                     .font(.popinsLight(size: 16))
                     .foregroundStyle(.primaryBlack)
                 
                 Spacer()
                 
-                Text("33 GEL")
+                Text("500 GEL")
                     .font(.popinsLight(size: 16))
                     .foregroundStyle(.primaryLightGreen)
             }
@@ -105,15 +115,15 @@ struct ManagedView: View {
         }
     }
     
-    private var managedExpencesHeadline: some View {
+    private var managedExpensesHeadline: some View {
         HStack {
-            Text("So far this month")
+            Text("მიმდინარე თვე")
                 .font(.popinsSemiBold(size: 18))
             
             Spacer()
             
-            Button("Edit") {
-                isEditing.toggle()  // Toggle edit mode when "Edit" is pressed
+            Button("შეცვლა") {
+                isEditing.toggle()
             }
             .foregroundColor(.primaryBlue)
         }
@@ -124,14 +134,14 @@ struct ManagedView: View {
         HStack {
             if isEditing {
                 Button(action: {
-                    toggleSelection(for: expense)  // Toggle selection when button is pressed
+                    toggleSelection(for: expense)
                 }) {
                     Image(systemName: selectedExpenses.contains(expense.id) ? "checkmark.circle.fill" : "circle")
                         .foregroundColor(selectedExpenses.contains(expense.id) ? .blue : .gray)
                 }
                 .padding(.leading, 8)
             }
-                        
+            
             VStack {
                 HStack {
                     Text(expense.name)
@@ -140,36 +150,34 @@ struct ManagedView: View {
                     
                     Spacer()
                     
-                    Text("Limit: \(expense.formattedLimit) GEL")
+                    Text("ლიმიტი: \(expense.formattedLimit) GEL")
                         .font(.popinsLight(size: 12))
                         .foregroundStyle(.primaryBlack)
                 }
                 
-                // ProgressView with color changes based on the remaining balance or exceeded limit
-                ProgressView(value: expense.spent / max(expense.limit, expense.spent)) {
-                }
-                .progressViewStyle(LinearProgressViewStyle())
-                .accentColor(getProgressColor(for: expense))
+                ProgressView(value: expense.spent / max(expense.limit, expense.spent)) {}
+                    .progressViewStyle(LinearProgressViewStyle())
+                    .accentColor(getProgressColor(for: expense))
                 
                 HStack {
                     if expense.spent > expense.limit {
-                        Text("Spent: \(expense.formattedSpent) GEL")
+                        Text("დანახარჯი: \(expense.formattedSpent) GEL")
                             .font(.popinsLight(size: 12))
                             .foregroundStyle(.primaryBlack)
                         
                         Spacer()
                         
-                        Text("Exceeded amount: \(expense.formattedExceeded) GEL")
+                        Text("გადახარჯვა: \(expense.formattedExceeded) GEL")
                             .font(.popinsLight(size: 12))
                             .foregroundStyle(.darkPink)
                     } else {
-                        Text("Spent: \(expense.formattedSpent) GEL")
+                        Text("დანახარჯი: \(expense.formattedSpent) GEL")
                             .font(.popinsLight(size: 12))
                             .foregroundStyle(.primaryBlack)
                         
                         Spacer()
                         
-                        Text("Remaining Balance: \(expense.formattedRemainingBalance) GEL")
+                        Text("მიმდინარე ბალანსი: \(expense.formattedRemainingBalance) GEL")
                             .font(.popinsLight(size: 12))
                             .foregroundStyle(.primaryBlack)
                     }
@@ -185,13 +193,13 @@ struct ManagedView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 50, height: 50)
-                        
+            
             VStack(alignment: .leading) {
                 Text("2.67")
                     .font(.popinsSemiBold(size: 20))
                     .foregroundStyle(.primaryBlack)
                 
-                Text("Green Points")
+                Text("მწვანე ქულები")
                     .font(.popinsLight(size: 16))
                     .foregroundStyle(.primaryBlack)
             }
@@ -204,35 +212,111 @@ struct ManagedView: View {
     
     private var naturalResourcesHeadline: some View {
         HStack {
-            Text("Protect natural resources")
+            Text("გაუფრთხილდი ბუნებრივ რესურსებს")
                 .font(.popinsSemiBold(size: 18))
+                .foregroundStyle(.primaryBlack)
             
             Spacer()
         }
         .padding()
     }
     
-    private func toggleSelection(for expense: ExpenseTypeModel) {
-        if selectedExpenses.contains(expense.id) {
-            selectedExpenses.remove(expense.id)  // Deselect if already selected
-        } else {
-            selectedExpenses.insert(expense.id)  // Select if not selected
+    private var comparingResources: some View {
+        VStack() {
+            HStack {
+                Text("ელექტროენერგია")
+                    .font(.popinsRegular(size: 16))
+                    .foregroundStyle(.primaryBlack)
+                
+                Spacer()
+            }
+            .padding(.leading)
+            
+            VStack {
+                VStack(alignment: .leading) {
+                    Text("მიმდინარე წელი")
+                        .font(.popinsLight(size: 14))
+                        .foregroundStyle(.primaryBlack)
+                    
+                    ProgressView(value: thisYearElectricity, total: max(lastYearElectricity, thisYearElectricity))
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .accentColor(.darkPink)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("წინა წელი")
+                        .font(.popinsLight(size: 14))
+                        .foregroundStyle(.primaryBlack)
+                    
+                    ProgressView(value: lastYearElectricity, total: max(lastYearElectricity, thisYearElectricity))
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .accentColor(.darkGreen)
+                }
+            }
+            .padding()
+            
+            Divider()
+                .padding(.vertical)
+            
+            HStack {
+                Text("ბუნებრივი აირი")
+                    .font(.popinsRegular(size: 16))
+                    .foregroundStyle(.primaryBlack)
+                
+                Spacer()
+            }
+            .padding(.leading)
+            
+            VStack {
+                VStack(alignment: .leading) {
+                    Text("მიმდინარე წელი")
+                        .font(.popinsLight(size: 14))
+                        .foregroundStyle(.primaryBlack)
+                    
+                    ProgressView(value: thisYearGas, total: max(lastYearGas, thisYearGas))
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .accentColor(.darkPink)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("წინა წელი")
+                        .font(.popinsLight(size: 14))
+                        .foregroundStyle(.primaryBlack)
+
+                    
+                    ProgressView(value: lastYearGas, total: max(lastYearGas, thisYearGas))
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .accentColor(.darkGreen)
+                }
+            }
+            .padding()
         }
     }
     
     private func deleteSelectedExpenses() {
         expenses.removeAll { expense in
-            selectedExpenses.contains(expense.id)  // Remove all selected expenses
+            selectedExpenses.contains(expense.id)
         }
-        selectedExpenses.removeAll()  // Clear the selection after deletion
+        selectedExpenses.removeAll()
+    }
+    
+    private func toggleSelection(for expense: ExpenseTypeModel) {
+        if selectedExpenses.contains(expense.id) {
+            selectedExpenses.remove(expense.id)
+        } else {
+            selectedExpenses.insert(expense.id)
+        }
     }
     
     private func getProgressColor(for expense: ExpenseTypeModel) -> Color {
-        let remainingBalance = expense.remainingBalance
-        if remainingBalance <= expense.limit * 0.1 && remainingBalance > 0 {
-            return .darkOrange
-        } else if expense.spent > expense.limit {
+        if expense.spent > expense.limit {
+            alertMessage = "Your expense has exceeded the limit by \(expense.formattedExceeded) GEL!"
+            showAlert = true
             return .darkPink
+        } else if expense.spent / expense.limit >= 0.8 {
+            alertMessage = "Warning: You've spent over 80% of the limit!"
+            showAlert = true
+            return .darkOrange
         } else {
             return .green
         }
@@ -241,7 +325,7 @@ struct ManagedView: View {
 
 #Preview {
     ManagedView(expenses: [
-        ExpenseTypeModel(id: 1, name: "Groceries", limit: 100, spent: 80),
-        ExpenseTypeModel(id: 2, name: "Transport", limit: 100, spent: 110)
+        ExpenseTypeModel(id: UUID(), name: "Groceries", limit: 100, spent: 80),
+        ExpenseTypeModel(id: UUID(), name: "Transport", limit: 100, spent: 110)
     ])
 }
