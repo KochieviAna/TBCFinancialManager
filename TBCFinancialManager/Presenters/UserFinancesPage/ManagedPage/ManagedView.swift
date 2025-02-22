@@ -10,8 +10,8 @@ import SwiftUI
 struct ManagedView: View {
     @State private var thisYearElectricity: Double = 80
     @State private var lastYearElectricity: Double = 60
-    @State private var thisYearGas: Double = 50
-    @State private var lastYearGas: Double = 30
+    @State private var thisYearGas: Double = 250
+    @State private var lastYearGas: Double = 180
     @State private var isEditing: Bool = false
     @State private var expenses: [ExpenseTypeModel]
     @State private var selectedExpenses: Set<UUID> = []
@@ -295,9 +295,17 @@ struct ManagedView: View {
             
             VStack {
                 VStack(alignment: .leading) {
-                    Text("მიმდინარე წელი")
-                        .font(.popinsLight(size: 14))
-                        .foregroundStyle(.primaryBlack)
+                    HStack {
+                        Text("თებერვალი")
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text(String(format: "%.0f GEL", thisYearElectricity))
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                    }
                     
                     ProgressView(value: thisYearElectricity, total: max(lastYearElectricity, thisYearElectricity))
                         .progressViewStyle(LinearProgressViewStyle())
@@ -305,9 +313,17 @@ struct ManagedView: View {
                 }
                 
                 VStack(alignment: .leading) {
-                    Text("წინა წელი")
-                        .font(.popinsLight(size: 14))
-                        .foregroundStyle(.primaryBlack)
+                    HStack {
+                        Text("წინა წელის თებერვალი")
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text(String(format: "%.0f GEL", lastYearElectricity))
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                    }
                     
                     ProgressView(value: lastYearElectricity, total: max(lastYearElectricity, thisYearElectricity))
                         .progressViewStyle(LinearProgressViewStyle())
@@ -330,9 +346,17 @@ struct ManagedView: View {
             
             VStack {
                 VStack(alignment: .leading) {
-                    Text("მიმდინარე წელი")
-                        .font(.popinsLight(size: 14))
-                        .foregroundStyle(.primaryBlack)
+                    HStack {
+                        Text("თებერვალი")
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text(String(format: "%.0f GEL", thisYearGas))
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                    }
                     
                     ProgressView(value: thisYearGas, total: max(lastYearGas, thisYearGas))
                         .progressViewStyle(LinearProgressViewStyle())
@@ -340,9 +364,17 @@ struct ManagedView: View {
                 }
                 
                 VStack(alignment: .leading) {
-                    Text("წინა წელი")
-                        .font(.popinsLight(size: 14))
-                        .foregroundStyle(.primaryBlack)
+                    HStack {
+                        Text("წინა წელის თებერვალი")
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text(String(format: "%.0f GEL", lastYearGas))
+                            .font(.popinsLight(size: 14))
+                            .foregroundStyle(.primaryBlack)
+                    }
                     
                     ProgressView(value: lastYearGas, total: max(lastYearGas, thisYearGas))
                         .progressViewStyle(LinearProgressViewStyle())
