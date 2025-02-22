@@ -5,27 +5,43 @@
 //  Created by MacBook on 22.02.25.
 //
 
-import SwiftUI
-
-public struct ExpenseTypeModel: Identifiable, Hashable {
-    public let id = UUID()
-    public let name: String
-    public let image: String?
-    public let darkColor: Color
-    public let lightColor: Color
-
-    init(name: String, image: String? = nil, darkColor: Color, lightColor: Color) {
-        self.name = name
-        self.image = image
-        self.darkColor = darkColor
-        self.lightColor = lightColor
+struct ExpenseTypeModel: Identifiable, Codable, Hashable {
+    let id: Int
+    let name: String
+    var limit: Double
+    var spent: Double
+    
+    // Computed properties for remaining balance, exceeded amount, and formatted values
+    var remainingBalance: Double {
+        return limit - spent
     }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    
+    var exceededAmount: Double {
+        return max(0, spent - limit)
     }
-
-    public static func == (lhs: ExpenseTypeModel, rhs: ExpenseTypeModel) -> Bool {
-        return lhs.id == rhs.id
+    
+    var formattedSpent: String {
+        return String(format: "%.2f", spent)
+    }
+    
+    var formattedExceeded: String {
+        return String(format: "%.2f", exceededAmount)
+    }
+    
+    var formattedLimit: String {
+        return String(format: "%.2f", limit)
+    }
+    
+    var formattedRemainingBalance: String {
+        return String(format: "%.2f", remainingBalance)
+    }
+    
+    // Conformance to Hashable protocol
+    static func == (lhs: ExpenseTypeModel, rhs: ExpenseTypeModel) -> Bool {
+        return lhs.id == rhs.id // compare by ID for equality
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id) // combine id for hashing
     }
 }

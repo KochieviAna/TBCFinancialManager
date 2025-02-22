@@ -8,16 +8,40 @@
 import SwiftUI
 
 struct ManagedView: View {
-    @State private var progress = 0.5
+    @State private var isEditing: Bool = false
+    @State private var expenses: [ExpenseTypeModel]
+    @State private var selectedExpenses: Set<Int> = [] // Track selected expenses using Int as id
+    
+    // Custom initializer to make the view accessible
+    init(expenses: [ExpenseTypeModel]) {
+        self._expenses = State(initialValue: expenses)
+    }
     
     var body: some View {
         ScrollView {
             VStack {
                 assetsView
                 
-                limitedExpencesView
+                managedExpencesHeadline
+                
+                ForEach(expenses, id: \.id) { expense in
+                    limitedExpensesView(for: expense)
+                }
+                                
+                if isEditing && !selectedExpenses.isEmpty {
+                    Button(action: deleteSelectedExpenses) {
+                        Text("Delete")
+                            .foregroundColor(.darkPink)
+                            .font(.popinsRegular(size: 16))
+                            .padding()
+                            .background(Color.clear)
+                    }
+                    .padding()
+                }
             }
+            .background(Color("backgroundColor"))
         }
+        .background(Color("backgroundColor"))
     }
     
     private var assetsView: some View {
@@ -73,45 +97,110 @@ struct ManagedView: View {
         }
     }
     
-    private var limitedExpencesView: some View {
-        VStack {
-            HStack {
+    private var managedExpencesHeadline: some View {
+        HStack {
+            Text("So far this month")
+                .font(.popinsSemiBold(size: 18))
+            
+            Spacer()
+            
+            Button("Edit") {
+                isEditing.toggle()  // Toggle edit mode when "Edit" is pressed
+            }
+            .foregroundColor(.primaryBlue)
+        }
+        .padding()
+    }
+    
+    private func limitedExpensesView(for expense: ExpenseTypeModel) -> some View {
+        HStack {
+            if isEditing {
+                Button(action: {
+                    toggleSelection(for: expense)  // Toggle selection when button is pressed
+                }) {
+                    Image(systemName: selectedExpenses.contains(expense.id) ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(selectedExpenses.contains(expense.id) ? .blue : .gray)
+                }
+                .padding(.leading, 8)
+            }
+            
+            VStack {
                 HStack {
-                    Image(systemName: "cart")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
+                    Text(expense.name)
+                        .font(.popinsLight(size: 12))
+                        .foregroundStyle(.primaryBlack)
                     
-                    Text("Clothing")
+                    Spacer()
+                    
+                    Text("Limit: \(expense.formattedLimit) GEL")
                         .font(.popinsLight(size: 12))
                         .foregroundStyle(.primaryBlack)
                 }
                 
-                Spacer()
+                // ProgressView with color changes based on the remaining balance or exceeded limit
+                ProgressView(value: expense.spent / max(expense.limit, expense.spent)) {
+                }
+                .progressViewStyle(LinearProgressViewStyle())
+                .accentColor(getProgressColor(for: expense))
                 
-                Text("Limit: 100 GEL")
-                    .font(.popinsLight(size: 12))
-                    .foregroundStyle(.primaryBlack)
-            }
-            
-            ProgressView(value: progress)
-            
-            HStack {
-                Text("Spent: 75 GEL")
-                    .font(.popinsLight(size: 12))
-                    .foregroundStyle(.primaryBlack)
-                
-                Spacer()
-                
-                Text("Remaining Balance: 25 GEL")
-                    .font(.popinsLight(size: 12))
-                    .foregroundStyle(.primaryBlack)
+                HStack {
+                    if expense.spent > expense.limit {
+                        Text("Spent: \(expense.formattedSpent) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text("Exceeded amount: \(expense.formattedExceeded) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.darkPink)
+                    } else {
+                        Text("Spent: \(expense.formattedSpent) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text("Remaining Balance: \(expense.formattedRemainingBalance) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.primaryBlack)
+                    }
+                }
             }
         }
         .padding()
     }
+    
+    private func toggleSelection(for expense: ExpenseTypeModel) {
+        if selectedExpenses.contains(expense.id) {
+            selectedExpenses.remove(expense.id)  // Deselect if already selected
+        } else {
+            selectedExpenses.insert(expense.id)  // Select if not selected
+        }
+    }
+    
+    private func deleteSelectedExpenses() {
+        expenses.removeAll { expense in
+            selectedExpenses.contains(expense.id)  // Remove all selected expenses
+        }
+        selectedExpenses.removeAll()  // Clear the selection after deletion
+    }
+    
+    private func getProgressColor(for expense: ExpenseTypeModel) -> Color {
+        let remainingBalance = expense.remainingBalance
+        if remainingBalance <= expense.limit * 0.1 && remainingBalance > 0 {
+            return .darkOrange
+        } else if expense.spent > expense.limit {
+            return .darkPink
+        } else {
+            return .green
+        }
+    }
 }
 
 #Preview {
-    ManagedView()
+    ManagedView(expenses: [
+        ExpenseTypeModel(id: 1, name: "Groceries", limit: 100, spent: 80),
+        ExpenseTypeModel(id: 2, name: "Transport", limit: 100, spent: 110)
+    ])
 }

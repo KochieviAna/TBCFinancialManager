@@ -8,43 +8,43 @@
 import SwiftUI
 
 struct UserFinancesView: View {
+    @StateObject private var networkManager = NetworkManager()
+    @State private var isAddingLimit = false
+    
     var body: some View {
         NavigationStack {
             VStack {
-
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("Financical Manager")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    HStack {
-                        Button(action: {
-                            
-                        }) {
-                            Image("burger.menu")
-                                .resizable()
-                                .frame(width: 37, height: 22)
-                        }
-                    }
+                if networkManager.expenses.isEmpty {
+                    EmptyView()
+                } else {
+                    ManagedView(expenses: networkManager.expenses)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .navigationTitle("Financial Manager")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack {
-                        Button(action: {
-                            
-                        }) {
-                            Image(systemName: "plus")
-                                .resizable()
-                                .font(.title.bold())
-                                .frame(width: 24, height: 24)
-                                .foregroundStyle(.primaryBlue)
-                        }
+                    Button(action: {
+                        isAddingLimit = true
+                    }) {
+                        Image(systemName: "plus")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.primaryBlue)
                     }
                 }
             }
             .background(Color("backgroundColor"))
             .edgesIgnoringSafeArea(.all)
+            .sheet(isPresented: $isAddingLimit) {
+                AddLimitsView { newExpense in
+                    networkManager.addExpense(newExpense)
+                    networkManager.fetchExpenses()
+                }
+            }
+            .onAppear {
+                networkManager.fetchExpenses()
+            }
         }
     }
 }

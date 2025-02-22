@@ -8,34 +8,28 @@
 import SwiftUI
 
 struct AddLimitsView: View {
-    @FocusState private var isTextFieldFocused: Bool
+    @Environment(\.dismiss) var dismiss
     @State private var limitAmount: String = ""
-    
-    @State private var selectedExpense: String? = nil
+    @State private var selectedExpense: ExpenseTypeModel?
     @State private var isPickerPresented: Bool = false
+    @State private var expenses: [ExpenseTypeModel] = []
+    @State private var showDuplicateAlert: Bool = false
     
-    @State private var expenses: [ExpenseTypeModel] = [
-        ExpenseTypeModel(name: "Family & Household", darkColor: .darkOrange, lightColor: .lightOrange),
-        ExpenseTypeModel(name: "Restaurant, Cafe, Bar", darkColor: .darkPink, lightColor: .lightPink),
-        ExpenseTypeModel(name: "Travel & Leisure", darkColor: .darkBlue, lightColor: .lightBlue),
-        ExpenseTypeModel(name: "Utility & Other Payments", darkColor: .darkYellow, lightColor: .lightYellow),
-        ExpenseTypeModel(name: "Entertainment", darkColor: .darkGreen, lightColor: .lightGreen),
-        ExpenseTypeModel(name: "Transportation", darkColor: .darkViolet, lightColor: .lightViolet),
-        ExpenseTypeModel(name: "Health & Beauty", darkColor: .darkPurple, lightColor: .lightPurple),
-    ]
+    let onLimitAdded: (ExpenseTypeModel) -> Void
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 limitDetailView
                 selectExpenseTypeView
-                
                 Spacer(minLength: 300)
-                
                 setLimitButton
             }
-            .navigationTitle("Financial Manager")
+            .navigationTitle("Set Expense Limit")
             .background(Color("backgroundColor"))
+            .alert(isPresented: $showDuplicateAlert) {
+                Alert(title: Text("Duplicate Expense"), message: Text("This expense type already has a limit set. Please choose another expense type."), dismissButton: .default(Text("OK")))
+            }
         }
         .sheet(isPresented: $isPickerPresented) {
             expensePickerSheet
@@ -53,14 +47,10 @@ struct AddLimitsView: View {
             }
             
             TextField("", text: $limitAmount)
-                .focused($isTextFieldFocused)
-                .background(Color.clear)
+                .keyboardType(.decimalPad)
                 .frame(height: 30)
                 .font(.popinsLight(size: 12))
                 .foregroundStyle(.primaryBlack)
-                .onAppear {
-                    isTextFieldFocused = true
-                }
             
             Divider()
                 .foregroundColor(.primaryBlue)
@@ -82,7 +72,7 @@ struct AddLimitsView: View {
                 Button(action: {
                     isPickerPresented.toggle()
                 }) {
-                    Text(selectedExpense ?? "Select Expense")
+                    Text(selectedExpense?.name ?? "Select Expense")
                         .font(.popinsLight(size: 12))
                         .foregroundColor(selectedExpense == nil ? .primaryBlack : .primaryWhite)
                 }
@@ -105,16 +95,12 @@ struct AddLimitsView: View {
                 Button("Done") {
                     isPickerPresented = false
                 }
-                .background(Color.clear)
                 .foregroundColor(.primaryBlue)
             }
             
-            Picker("Expense Type", selection: Binding(
-                get: { selectedExpense ?? expenses.first?.name },
-                set: { selectedExpense = $0 }
-            )) {
-                ForEach(expenses, id: \.name) { expense in
-                    Text(expense.name).tag(expense.name as String?)
+            Picker("Expense Type", selection: $selectedExpense) {
+                ForEach(expenses, id: \.id) { expense in
+                    Text(expense.name).tag(expense as ExpenseTypeModel?)
                 }
             }
             .pickerStyle(.wheel)
@@ -126,7 +112,18 @@ struct AddLimitsView: View {
     
     private var setLimitButton: some View {
         Button(action: {
+            guard let selectedExpense = selectedExpense, let limit = Double(limitAmount) else { return }
             
+            if selectedExpense.limit > 0 {
+                showDuplicateAlert = true
+                return
+            }
+            
+            var newExpense = selectedExpense
+            newExpense.limit = limit
+            
+            onLimitAdded(newExpense)
+            dismiss()
         }) {
             Text("Set Limit")
                 .frame(maxWidth: .infinity)
@@ -136,9 +133,11 @@ struct AddLimitsView: View {
                 .cornerRadius(30)
         }
         .padding()
+        .disabled(selectedExpense?.limit ?? 0 > 0)
     }
 }
 
+
 #Preview {
-    AddLimitsView()
+    AddLimitsView(onLimitAdded: {_ in })
 }
