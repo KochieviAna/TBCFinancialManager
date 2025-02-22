@@ -78,12 +78,12 @@ struct ManagedView: View {
             let expense = expenses[i]
             
             if expense.spent > expense.limit {
-                alertMessage = "Your expense has exceeded the limit by \(expense.formattedExceeded) GEL!"
+                alertMessage = "ყურადღებით! თქვენ გადააჭარბეთ დადგენილ ლიმიტს \(expense.formattedExceeded) ლარით!"
                 showAlert = true
                 expenses[i].has80PercentWarning = false
             }
             else if expense.spent / expense.limit >= 0.8 && !expense.has80PercentWarning {
-                alertMessage = "Warning: You've spent over 80% of the limit!"
+                alertMessage = "მოგახსენებთ, რომ თქვენ გადააჭარბეთ დადგენილი ლიმიტის 80%-ს."
                 showAlert = true
                 expenses[i].has80PercentWarning = true
             }
