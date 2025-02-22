@@ -38,6 +38,14 @@ struct ManagedView: View {
                     }
                     .padding()
                 }
+                
+                Divider()
+                
+                greenPointsView
+                
+                Divider()
+
+                naturalResourcesHeadline
             }
             .background(Color("backgroundColor"))
         }
@@ -123,7 +131,7 @@ struct ManagedView: View {
                 }
                 .padding(.leading, 8)
             }
-            
+                        
             VStack {
                 HStack {
                     Text(expense.name)
@@ -167,6 +175,39 @@ struct ManagedView: View {
                     }
                 }
             }
+        }
+        .padding()
+    }
+    
+    private var greenPointsView: some View {
+        HStack {
+            Image("green")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                        
+            VStack(alignment: .leading) {
+                Text("2.67")
+                    .font(.popinsSemiBold(size: 20))
+                    .foregroundStyle(.primaryBlack)
+                
+                Text("Green Points")
+                    .font(.popinsLight(size: 16))
+                    .foregroundStyle(.primaryBlack)
+            }
+            .padding(.leading)
+            
+            Spacer()
+        }
+        .padding()
+    }
+    
+    private var naturalResourcesHeadline: some View {
+        HStack {
+            Text("Protect natural resources")
+                .font(.popinsSemiBold(size: 18))
+            
+            Spacer()
         }
         .padding()
     }
