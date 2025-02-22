@@ -17,6 +17,7 @@ struct ManagedView: View {
     @State private var selectedExpenses: Set<UUID> = []
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
+    @State private var timer: Timer?
     
     init(expenses: [ExpenseTypeModel]) {
         self._expenses = State(initialValue: expenses)
@@ -31,6 +32,11 @@ struct ManagedView: View {
                 
                 ForEach(expenses, id: \.id) { expense in
                     limitedExpensesView(for: expense)
+                    Button("Simulate Spending") {
+                        simulateSpending(for: expense)
+                    }
+                    .padding()
+                    .foregroundColor(.primaryBlue)
                 }
                 
                 if isEditing && !selectedExpenses.isEmpty {
@@ -56,9 +62,117 @@ struct ManagedView: View {
             }
             .background(Color("backgroundColor"))
         }
-        .background(Color("backgroundColor"))
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Warning"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        }
+    }
+    
+    private func simulateSpending(for expense: ExpenseTypeModel) {
+        guard let index = expenses.firstIndex(where: { $0.id == expense.id }) else { return }
+        expenses[index].spent += 10
+        checkAlertForExpenses()
+    }
+    
+    private func checkAlertForExpenses() {
+        for i in 0..<expenses.count {
+            let expense = expenses[i]
+            
+            if expense.spent > expense.limit {
+                alertMessage = "Your expense has exceeded the limit by \(expense.formattedExceeded) GEL!"
+                showAlert = true
+                expenses[i].has80PercentWarning = false
+            }
+            else if expense.spent / expense.limit >= 0.8 && !expense.has80PercentWarning {
+                alertMessage = "Warning: You've spent over 80% of the limit!"
+                showAlert = true
+                expenses[i].has80PercentWarning = true
+            }
+        }
+    }
+    
+    private func getProgressColor(for expense: ExpenseTypeModel) -> Color {
+        if expense.spent > expense.limit {
+            alertMessage = "Your expense has exceeded the limit by \(expense.formattedExceeded) GEL!"
+            showAlert = true
+            return .darkPink
+        } else if expense.spent / expense.limit >= 0.8 {
+            alertMessage = "Warning: You've spent over 80% of the limit!"
+            showAlert = true
+            return .darkOrange
+        } else {
+            return .green
+        }
+    }
+    
+    private func limitedExpensesView(for expense: ExpenseTypeModel) -> some View {
+        HStack {
+            if isEditing {
+                Button(action: {
+                    toggleSelection(for: expense)
+                }) {
+                    Image(systemName: selectedExpenses.contains(expense.id) ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(selectedExpenses.contains(expense.id) ? .blue : .gray)
+                }
+                .padding(.leading, 8)
+            }
+            
+            VStack {
+                HStack {
+                    Text(expense.name)
+                        .font(.popinsLight(size: 12))
+                        .foregroundStyle(.primaryBlack)
+                    
+                    Spacer()
+                    
+                    Text("ლიმიტი: \(expense.formattedLimit) GEL")
+                        .font(.popinsLight(size: 12))
+                        .foregroundStyle(.primaryBlack)
+                }
+                
+                ProgressView(value: expense.spent / max(expense.limit, expense.spent)) {}
+                    .progressViewStyle(LinearProgressViewStyle())
+                    .accentColor(getProgressColor(for: expense))
+                
+                HStack {
+                    if expense.spent > expense.limit {
+                        Text("დანახარჯი: \(expense.formattedSpent) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text("გადახარჯვა: \(expense.formattedExceeded) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.darkPink)
+                    } else {
+                        Text("დანახარჯი: \(expense.formattedSpent) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.primaryBlack)
+                        
+                        Spacer()
+                        
+                        Text("მიმდინარე ბალანსი: \(expense.formattedRemainingBalance) GEL")
+                            .font(.popinsLight(size: 12))
+                            .foregroundStyle(.primaryBlack)
+                    }
+                }
+            }
+        }
+        .padding()
+    }
+    
+    private func deleteSelectedExpenses() {
+        expenses.removeAll { expense in
+            selectedExpenses.contains(expense.id)
+        }
+        selectedExpenses.removeAll()
+    }
+    
+    private func toggleSelection(for expense: ExpenseTypeModel) {
+        if selectedExpenses.contains(expense.id) {
+            selectedExpenses.remove(expense.id)
+        } else {
+            selectedExpenses.insert(expense.id)
         }
     }
     
@@ -126,63 +240,6 @@ struct ManagedView: View {
                 isEditing.toggle()
             }
             .foregroundColor(.primaryBlue)
-        }
-        .padding()
-    }
-    
-    private func limitedExpensesView(for expense: ExpenseTypeModel) -> some View {
-        HStack {
-            if isEditing {
-                Button(action: {
-                    toggleSelection(for: expense)
-                }) {
-                    Image(systemName: selectedExpenses.contains(expense.id) ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(selectedExpenses.contains(expense.id) ? .blue : .gray)
-                }
-                .padding(.leading, 8)
-            }
-            
-            VStack {
-                HStack {
-                    Text(expense.name)
-                        .font(.popinsLight(size: 12))
-                        .foregroundStyle(.primaryBlack)
-                    
-                    Spacer()
-                    
-                    Text("ლიმიტი: \(expense.formattedLimit) GEL")
-                        .font(.popinsLight(size: 12))
-                        .foregroundStyle(.primaryBlack)
-                }
-                
-                ProgressView(value: expense.spent / max(expense.limit, expense.spent)) {}
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .accentColor(getProgressColor(for: expense))
-                
-                HStack {
-                    if expense.spent > expense.limit {
-                        Text("დანახარჯი: \(expense.formattedSpent) GEL")
-                            .font(.popinsLight(size: 12))
-                            .foregroundStyle(.primaryBlack)
-                        
-                        Spacer()
-                        
-                        Text("გადახარჯვა: \(expense.formattedExceeded) GEL")
-                            .font(.popinsLight(size: 12))
-                            .foregroundStyle(.darkPink)
-                    } else {
-                        Text("დანახარჯი: \(expense.formattedSpent) GEL")
-                            .font(.popinsLight(size: 12))
-                            .foregroundStyle(.primaryBlack)
-                        
-                        Spacer()
-                        
-                        Text("მიმდინარე ბალანსი: \(expense.formattedRemainingBalance) GEL")
-                            .font(.popinsLight(size: 12))
-                            .foregroundStyle(.primaryBlack)
-                    }
-                }
-            }
         }
         .padding()
     }
@@ -282,7 +339,6 @@ struct ManagedView: View {
                     Text("წინა წელი")
                         .font(.popinsLight(size: 14))
                         .foregroundStyle(.primaryBlack)
-
                     
                     ProgressView(value: lastYearGas, total: max(lastYearGas, thisYearGas))
                         .progressViewStyle(LinearProgressViewStyle())
@@ -290,35 +346,6 @@ struct ManagedView: View {
                 }
             }
             .padding()
-        }
-    }
-    
-    private func deleteSelectedExpenses() {
-        expenses.removeAll { expense in
-            selectedExpenses.contains(expense.id)
-        }
-        selectedExpenses.removeAll()
-    }
-    
-    private func toggleSelection(for expense: ExpenseTypeModel) {
-        if selectedExpenses.contains(expense.id) {
-            selectedExpenses.remove(expense.id)
-        } else {
-            selectedExpenses.insert(expense.id)
-        }
-    }
-    
-    private func getProgressColor(for expense: ExpenseTypeModel) -> Color {
-        if expense.spent > expense.limit {
-            alertMessage = "Your expense has exceeded the limit by \(expense.formattedExceeded) GEL!"
-            showAlert = true
-            return .darkPink
-        } else if expense.spent / expense.limit >= 0.8 {
-            alertMessage = "Warning: You've spent over 80% of the limit!"
-            showAlert = true
-            return .darkOrange
-        } else {
-            return .green
         }
     }
 }

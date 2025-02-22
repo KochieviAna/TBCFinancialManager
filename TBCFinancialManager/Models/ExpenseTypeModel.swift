@@ -12,6 +12,7 @@ struct ExpenseTypeModel: Identifiable, Codable, Hashable {
     var name: String
     var limit: Double
     var spent: Double
+    var has80PercentWarning: Bool = false
     
     var remainingBalance: Double {
         return limit - spent
