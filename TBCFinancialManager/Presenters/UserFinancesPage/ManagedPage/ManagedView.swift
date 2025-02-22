@@ -32,7 +32,7 @@ struct ManagedView: View {
                 
                 ForEach(expenses, id: \.id) { expense in
                     limitedExpensesView(for: expense)
-                    Button("Simulate Spending") {
+                    Button("ხარჯვის სიმულაცია") {
                         simulateSpending(for: expense)
                     }
                     .padding()
@@ -63,7 +63,7 @@ struct ManagedView: View {
             .background(Color("backgroundColor"))
         }
         .alert(isPresented: $showAlert) {
-            Alert(title: Text("Warning"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            Alert(title: Text(""), message: Text(alertMessage), dismissButton: .default(Text("დიახ")))
         }
     }
     
