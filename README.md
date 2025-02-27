@@ -13,10 +13,8 @@ Our integrated campaign motivates users to engage in practices that benefit both
 
 Clone the Repository:
 
-bash
-Copy
-Edit
 git clone https://github.com/KochieviAna/TBCFinancialManager.git
+
 Open the Project: Navigate to the project directory and open TBCFinancialManager.xcodeproj in Xcode.
 
 Build and Run: Select your target device or simulator and press Run to build and launch the application.
